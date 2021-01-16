@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <component :is="getLayout()" />
+    <component :is="getLayout" />
   </div>
 </template>
 
@@ -22,7 +22,7 @@ import LayoutLogin from '@/layout/Login.vue';
 export default class App extends Vue {
   private isAuthenticated!: boolean;
 
-  private getLayout(): string {
+  private get getLayout(): string {
     if (this.isAuthenticated) {
       return Authenticated.name;
     }

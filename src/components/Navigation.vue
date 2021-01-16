@@ -6,7 +6,8 @@
       <router-link :to="{ name: 'Admin' }">Admin</router-link>
       |
     </template>
-    <router-link :to="{ name: 'About' }">About</router-link>
+    <router-link :to="{ name: 'About' }">About</router-link> |
+    <router-link :to="{ name: 'Logout' }">Logout</router-link>
   </div>
 </template>
 

@@ -1,9 +1,12 @@
 import { LoginForm, LoginResponse } from '@/interfaces/Login';
 import { User } from '@/interfaces/User';
 import { AxiosInstance } from 'axios';
-import { Dispatch } from 'vuex';
+import { Commit, Dispatch } from 'vuex';
 
 const KEY_AUTH_TOKEN = 'auth-token';
+const AUTHENTICATE = 'authenticate';
+const AUTH_AXIOS = 'auth_axios';
+const AUTH_USER = 'auth_user';
 
 const authModule = {
   state: () => ({
@@ -22,20 +25,36 @@ const authModule = {
       return authToken;
     },
   },
-  actions: {
-    setAxios({ state, dispatch }: { state: any; dispatch: Dispatch }, axios: AxiosInstance) {
-      console.log('set axios');
+  mutations: {
+    [AUTHENTICATE](state: any, authToken: string | null) {
+      if (authToken) {
+        localStorage.setItem(KEY_AUTH_TOKEN, authToken);
+      } else {
+        localStorage.removeItem(KEY_AUTH_TOKEN);
+      }
+
+      state.authToken = authToken;
+
+      // eslint-disable-next-line no-param-reassign
+      state.axios.defaults.headers = {
+        ...state.axios.defaults.headers,
+        'auth-token': authToken,
+      };
+    },
+    [AUTH_AXIOS](state: any, axios: AxiosInstance) {
       state.axios = axios;
+    },
+    [AUTH_USER](state: any, user: User | null) {
+      state.user = user;
+    },
+  },
+  actions: {
+    initAxios({ dispatch, commit }: { dispatch: Dispatch; commit: Commit }, axios: AxiosInstance) {
+      commit(AUTH_AXIOS, axios);
 
       const authToken = localStorage.getItem(KEY_AUTH_TOKEN);
       if (authToken) {
-        state.authToken = authToken;
-
-        // eslint-disable-next-line no-param-reassign
-        axios.defaults.headers = {
-          ...axios.defaults.headers,
-          'auth-token': localStorage.getItem(KEY_AUTH_TOKEN),
-        };
+        commit(AUTHENTICATE, authToken);
 
         dispatch('fetchMe');
       }
@@ -64,20 +83,23 @@ const authModule = {
         return { success: false, error: e.message };
       }
     },
-    async authUser({ state }: any, { authToken, user }: { authToken: string; user: User }) {
-      state.user = user;
-      state.authToken = authToken;
+    async authUser({ commit }: { commit: Commit },
+      { authToken, user }: { authToken: string; user: User }) {
+      commit(AUTH_USER, user);
+      commit(AUTHENTICATE, authToken);
+    },
+    async logout({ state, commit }: { state: any; commit: Commit }) {
+      if (state.authToken !== null) {
+        state.axios.post('/api/logout');
+      }
 
-      localStorage.setItem(KEY_AUTH_TOKEN, authToken);
+      commit(AUTH_USER, null);
+      commit(AUTHENTICATE, null);
     },
-    async logout({ state }: any) {
-      state.authToken = null;
-      localStorage.removeItem(KEY_AUTH_TOKEN);
-    },
-    async fetchMe({ state }: { state: { user: User | null; axios: AxiosInstance } }) {
+    async fetchMe({ state, commit }: { commit: Commit; state: { axios: AxiosInstance } }) {
       try {
         const { data } = await state.axios.get('/api/user/me');
-        state.user = data.user;
+        commit(AUTH_USER, data.user);
       } catch (e) {
         // nth
       }

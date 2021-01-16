@@ -28,6 +28,6 @@ const axiosInstance = axios.create({
   },
 });
 
-store.dispatch('setAxios', axiosInstance);
+store.dispatch('initAxios', axiosInstance);
 
 export default store;
