@@ -1,12 +1,36 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <component :is="getLayout()" />
   </div>
 </template>
+
+<script lang="ts">
+import { Component, Vue, Watch } from 'vue-property-decorator';
+import { mapGetters } from 'vuex';
+import Authenticated from '@/layout/Authenticated.vue';
+import LayoutLogin from '@/layout/Login.vue';
+
+@Component<App>({
+  computed: {
+    ...mapGetters(['isAuthenticated']),
+  },
+  components: {
+    [Authenticated.name]: Authenticated,
+    [LayoutLogin.name]: LayoutLogin,
+  },
+})
+export default class App extends Vue {
+  private isAuthenticated!: boolean;
+
+  private getLayout(): string {
+    if (this.isAuthenticated) {
+      return Authenticated.name;
+    }
+
+    return LayoutLogin.name;
+  }
+}
+</script>
 
 <style lang="scss">
 #app {
@@ -15,18 +39,5 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
 }
 </style>
