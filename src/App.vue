@@ -40,4 +40,10 @@ export default class App extends Vue {
   text-align: center;
   color: #2c3e50;
 }
+
+:root {
+  --color-primary: #2c3e50;
+  --color-white: #fff;
+  --color-gray: rgb(104, 104, 104);
+}
 </style>

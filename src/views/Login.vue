@@ -2,10 +2,10 @@
   <div class="login">
     <div class="login-wrapper">
       <h1 class="title">Login</h1>
-      <TextField v-model="username" />
-      <TextField v-model="password" />
-      <div v-if="error">{{ error }}</div>
-      <Button @click="doLogin">Login</Button>
+        <TextField v-model="username" />
+        <TextField v-model="password" type="password" />
+        <div v-if="error">{{ error }}</div>
+        <Button @click="doLogin" type="primary">Login</Button>
     </div>
   </div>
 </template>
@@ -73,11 +73,6 @@ export default class LoginView extends Vue {
     letter-spacing: 0.36px;
     text-align: center;
     color: var(--color-white);
-  }
-
-  .button {
-    align-self: flex-end;
-    padding: 20px 35px;
   }
 
   .input-wrapper {

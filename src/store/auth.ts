@@ -2,23 +2,17 @@ import { LoginForm, LoginResponse } from '@/interfaces/Login';
 import { User } from '@/interfaces/User';
 import { AxiosInstance } from 'axios';
 import { Commit, Dispatch } from 'vuex';
+import * as types from './types';
 
-const KEY_AUTH_TOKEN = 'auth-token';
-const AUTHENTICATE = 'authenticate';
-const AUTH_AXIOS = 'auth_axios';
-const AUTH_USER = 'auth_user';
-
-const authModule = {
+export default {
   state: () => ({
-    axios: null as AxiosInstance | null,
     user: null as User | null,
-    authToken: null as string | null,
   }),
   getters: {
     isAdmin({ user }: { user: User | null }): boolean {
       return user !== null && user.isAdmin;
     },
-    isAuthenticated({ authToken }: { authToken: string | null }): boolean {
+    isAuthenticated(_1: any, _2: any, { authToken }: { authToken: string | null }): boolean {
       return authToken !== null;
     },
     getAuthToken({ authToken }: { authToken: string | null }): string | null {
@@ -26,57 +20,29 @@ const authModule = {
     },
   },
   mutations: {
-    [AUTHENTICATE](state: any, authToken: string | null) {
-      if (authToken) {
-        localStorage.setItem(KEY_AUTH_TOKEN, authToken);
-      } else {
-        localStorage.removeItem(KEY_AUTH_TOKEN);
-      }
-
-      state.authToken = authToken;
-
-      // eslint-disable-next-line no-param-reassign
-      state.axios.defaults.headers = {
-        ...state.axios.defaults.headers,
-        'auth-token': authToken,
-      };
-    },
-    [AUTH_AXIOS](state: any, axios: AxiosInstance) {
-      state.axios = axios;
-    },
-    [AUTH_USER](state: any, user: User | null) {
+    [types.AUTH_USER](state: any, user: User | null) {
       state.user = user;
     },
   },
   actions: {
-    initAxios({ dispatch, commit }: { dispatch: Dispatch; commit: Commit }, axios: AxiosInstance) {
-      commit(AUTH_AXIOS, axios);
-
-      const authToken = localStorage.getItem(KEY_AUTH_TOKEN);
-      if (authToken) {
-        commit(AUTHENTICATE, authToken);
-
-        dispatch('fetchMe');
-      }
+    initAxios({ dispatch }: { dispatch: Dispatch }, axios: AxiosInstance) {
+      dispatch('fetchMe');
     },
-    async login({ state, dispatch }: { state: any; dispatch: Dispatch },
+    async login({ rootState, dispatch }: { rootState: any; dispatch: Dispatch },
       { username, password }: LoginForm): Promise<LoginResponse> {
       if (!username || !password) {
         return { success: false, error: 'Kein Username / password' };
       }
 
       try {
-        console.log('Auth user');
-
-        return await state.axios.post('/api/login', { username, password })
+        return await rootState.axios.post('/api/login', { username, password })
           .then((response: any) => {
             const { user, message, authToken } = response.data;
-            console.log('Has Response');
 
             if (!authToken) {
               return { success: false, error: message };
             }
-            return dispatch('authUser', { authToken, user })
+            return dispatch('authUser', { authToken, user }, { root: true })
               .then(() => ({ success: true, error: null }));
           });
       } catch (e) {
@@ -85,26 +51,24 @@ const authModule = {
     },
     async authUser({ commit }: { commit: Commit },
       { authToken, user }: { authToken: string; user: User }) {
-      commit(AUTH_USER, user);
-      commit(AUTHENTICATE, authToken);
+      commit(types.AUTH_USER, user, { root: true });
+      commit(types.AUTHENTICATE, authToken, { root: true });
     },
-    async logout({ state, commit }: { state: any; commit: Commit }) {
-      if (state.authToken !== null) {
-        state.axios.post('/api/logout');
+    async logout({ rootState, commit }: { rootState: any; commit: Commit }) {
+      if (rootState.authToken !== null) {
+        rootState.axios.post('/api/logout');
       }
 
-      commit(AUTH_USER, null);
-      commit(AUTHENTICATE, null);
+      commit(types.AUTH_USER, null, { root: true });
+      commit(types.AUTHENTICATE, null, { root: true });
     },
-    async fetchMe({ state, commit }: { commit: Commit; state: { axios: AxiosInstance } }) {
+    async fetchMe({ rootState, commit }: { commit: Commit; rootState: { axios: AxiosInstance } }) {
       try {
-        const { data } = await state.axios.get('/api/user/me');
-        commit(AUTH_USER, data.user);
+        const { data } = await rootState.axios.get('/api/user/me');
+        commit(types.AUTH_USER, data.user, { root: true });
       } catch (e) {
         // nth
       }
     },
   },
 };
-
-export default authModule;
