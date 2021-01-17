@@ -1,5 +1,5 @@
 import { LoginForm, LoginResponse } from '@/interfaces/Login';
-import { User } from '@/interfaces/User';
+import { User } from '@/interfaces/Entity';
 import { AxiosInstance } from 'axios';
 import { Commit, Dispatch } from 'vuex';
 import * as types from './types';

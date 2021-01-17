@@ -12,14 +12,14 @@
 import { Component, Vue } from 'vue-property-decorator';
 import ModifyBuilding from '@/components/Admin/Building.vue';
 import { mapActions, mapGetters, mapState } from 'vuex';
-import * as types from '@/store/types';
-import { Building } from '@/interfaces/Building';
+import { types } from '@/store/entity-api';
+import { Building, NAMES as entity } from '@/interfaces/Entity';
 
 @Component({
   components: {
     ModifyBuilding,
   },
-  methods: mapActions(types.ENTITY.BUILDING, {
+  methods: mapActions(entity.building, {
     fetchBuildings: types.FETCH_LIST,
     createBuilding: types.CREATE,
     deleteBuilding: types.DELETE,
@@ -27,7 +27,7 @@ import { Building } from '@/interfaces/Building';
   }),
   computed: {
     ...mapGetters(['isAdmin']),
-    ...mapState(types.ENTITY.BUILDING, {
+    ...mapState(entity.building, {
       isLoading: 'isLoading',
       buildings: 'list',
     }),

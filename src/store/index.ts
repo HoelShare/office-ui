@@ -1,8 +1,9 @@
 import Vue from 'vue';
 import Vuex, { Commit } from 'vuex';
 import authModule from '@/store/auth';
-import buildingModule from '@/store/building';
+import entityApi from '@/store/entity-api';
 import axios, { AxiosInstance } from 'axios';
+import * as entity from '@/interfaces/Entity';
 import * as types from './types';
 
 Vue.use(Vuex);
@@ -42,7 +43,13 @@ const store = new Vuex.Store({
   },
   modules: {
     auth: authModule,
-    [types.ENTITY.BUILDING]: buildingModule,
+    [entity.NAMES.asset]: entityApi<entity.Asset>(entity.NAMES.asset),
+    [entity.NAMES.booking]: entityApi<entity.Booking>(entity.NAMES.booking),
+    [entity.NAMES.building]: entityApi<entity.Building>(entity.NAMES.building),
+    [entity.NAMES.floor]: entityApi<entity.Floor>(entity.NAMES.floor),
+    [entity.NAMES.seat]: entityApi<entity.Seat>(entity.NAMES.seat),
+    [entity.NAMES.seatAsset]: entityApi<entity.SeatAsset>(entity.NAMES.seatAsset),
+    [entity.NAMES.user]: entityApi<entity.User>(entity.NAMES.user),
   },
 });
 

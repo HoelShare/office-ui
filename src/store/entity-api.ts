@@ -1,32 +1,40 @@
-import { Building } from '@/interfaces/Building';
 import { AxiosInstance } from 'axios';
 import { Commit, Dispatch } from 'vuex';
-import * as types from './types';
 
-export default {
+export const types = {
+  FETCH_LIST: 'fetch_list',
+  CREATE: 'create',
+  MODIFY: 'modify',
+  DELETE: 'delete',
+  SET_ALL: 'setAll',
+  LOAD: 'loading_state',
+  DETAIL: 'detail',
+};
+
+export default <S extends { id?: number | undefined }>(entityName: string) => ({
   namespaced: true,
   state: {
-    current: null as Building | null,
-    list: [] as Array<Building>,
+    current: null as S | null,
+    list: [] as Array<S>,
     isLoading: false,
   },
   mutations: {
-    [types.CREATE](state: { list: Array<Building> }, building: Building) {
-      state.list.push(building);
+    [types.CREATE](state: { list: Array<S> }, newCreated: S) {
+      state.list.push(newCreated);
     },
-    [types.SET_ALL](state: { list: Array<Building> }, buildings: Array<Building>) {
-      state.list = buildings;
+    [types.SET_ALL](state: { list: Array<S> }, list: Array<S>) {
+      state.list = list;
     },
-    [types.MODIFY](state: { list: Array<Building> }, updated: Building) {
-      const index = state.list.findIndex((building) => building.id === updated.id);
+    [types.MODIFY](state: { list: Array<S> }, updated: S) {
+      const index = state.list.findIndex((item) => item.id === updated.id);
       state.list.splice(index, 1, updated);
     },
     [types.LOAD](state: { isLoading: boolean }, isLoading: boolean) {
       state.isLoading = isLoading;
     },
-    [types.DELETE](state: { list: Array<Building> }, toDelete: Building | number) {
+    [types.DELETE](state: { list: Array<S> }, toDelete: S | number) {
       const index = state.list.findIndex(
-        (building) => building === toDelete || building.id === toDelete,
+        (item) => item === toDelete || item.id === toDelete,
       );
 
       if (index === -1) {
@@ -41,20 +49,20 @@ export default {
       {
         rootState: { axios: AxiosInstance };
         commit: Commit;
-        state: { list: Array<Building> };
-      }): Promise<Array<Building>> {
+        state: { list: Array<S> };
+      }): Promise<Array<S>> {
       if (state.list.length) {
         return new Promise((resolve) => resolve(state.list));
       }
 
       commit(types.LOAD, true);
-      return rootState.axios.get('/api/building')
+      return rootState.axios.get(`/api/${entityName}`)
         .then((response) => response.data)
-        .then((data) => data.building)
-        .then((buildings: Array<Building>) => {
-          buildings.forEach((building) => commit(types.CREATE, building));
+        .then((data) => data[entityName])
+        .then((items: Array<S>) => {
+          items.forEach((item) => commit(types.CREATE, item));
 
-          return buildings;
+          return items;
         })
         .finally(() => {
           commit(types.LOAD, false);
@@ -63,10 +71,10 @@ export default {
         });
     },
     [types.CREATE]({ rootState, commit }:
-      { rootState: { axios: AxiosInstance }; commit: Commit }, building: Building): Promise<void> {
+      { rootState: { axios: AxiosInstance }; commit: Commit }, item: S): Promise<void> {
       commit(types.LOAD, true);
 
-      return rootState.axios.post('/api/building', building)
+      return rootState.axios.post(`/api/${entityName}`, item)
         .then((response) => response.data)
         .then((newCreated) => {
           commit(types.CREATE, newCreated);
@@ -76,14 +84,14 @@ export default {
       {
         rootState: { axios: AxiosInstance };
         commit: Commit;
-      }, buildingId: number): Promise<void> {
+      }, id: number): Promise<void> {
       commit(types.LOAD, true);
 
-      return rootState.axios.get(`/api/building/${buildingId}`)
+      return rootState.axios.get(`/api/${entityName}/${id}`)
         .then((response) => response.data)
-        .then((building) => {
-          commit(types.MODIFY, building);
-          return building;
+        .then((item) => {
+          commit(types.MODIFY, item);
+          return item;
         })
         .finally(() => commit(types.LOAD, false));
     },
@@ -92,16 +100,16 @@ export default {
         rootState: { axios: AxiosInstance };
         commit: Commit;
         dispatch: Dispatch;
-      }, building: Building): Promise<void> {
+      }, item: S): Promise<void> {
       console.log('Dispatch modify');
 
-      if (!building.id) {
-        return dispatch(types.CREATE, building);
+      if (!item.id) {
+        return dispatch(types.CREATE, item);
       }
 
       commit(types.LOAD, true);
 
-      return rootState.axios.patch(`/api/building/${building.id}`, building)
+      return rootState.axios.patch(`/api/${entityName}/${item.id}`, item)
         .then((response) => response.data)
         .then((data) => commit(types.MODIFY, data))
         .finally(() => commit(types.LOAD, false));
@@ -110,12 +118,12 @@ export default {
       {
         rootState: { axios: AxiosInstance };
         commit: Commit;
-      }, buildingId: number): Promise<void> {
+      }, id: number): Promise<void> {
       commit(types.LOAD, true);
 
-      return rootState.axios.delete(`/api/building/${buildingId}`)
-        .then(() => commit(types.DELETE, buildingId))
+      return rootState.axios.delete(`/api/${entityName}/${id}`)
+        .then(() => commit(types.DELETE, id))
         .finally(() => commit(types.LOAD, false));
     },
   },
-};
+});
