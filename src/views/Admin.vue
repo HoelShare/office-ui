@@ -1,55 +1,75 @@
 <template>
   <div class="admin" v-if="isAdmin">
-    Is Loading: {{ isLoading }}
-    <ModifyBuilding />
-    <div v-for="building in buildings" :key="building.id">
-      {{ building.id }} - {{ building.name }}
-    </div>
+    <p>Is Loading Entity: {{ isLoadingEntity }}</p>
+    <p>Is Loading Map: {{ isLoadingMap }}</p>
+    <SelectField entity="floor" v-model="floor.buildingId" />
+    <TextField v-model="floor.name" />
+    <TextField v-model="floor.number" />
+    <input type="file" ref="file" />
+    <Button type="primary" @click="save">Abschicken</Button>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import ModifyBuilding from '@/components/Admin/Building.vue';
+import TextField from '@/components/TextField.vue';
+import Button from '@/components/Button.vue';
+import SelectField from '@/components/SelectField.vue';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { types } from '@/store/entity-api';
-import { Building, NAMES as entity } from '@/interfaces/Entity';
+import { Floor, NAMES as entity } from '@/interfaces/Entity';
+import { NAME as floorMapName } from '@/store/floor-api';
 
 @Component({
   components: {
     ModifyBuilding,
+    TextField,
+    Button,
+    SelectField,
   },
-  methods: mapActions(entity.building, {
-    fetchBuildings: types.FETCH_LIST,
-    createBuilding: types.CREATE,
-    deleteBuilding: types.DELETE,
-    modifyBuilding: types.MODIFY,
-  }),
+  methods: {
+    ...mapActions(floorMapName, {
+      createMap: types.CREATE,
+    }),
+    ...mapActions(entity.floor, {
+      createFloor: types.CREATE,
+    }),
+  },
   computed: {
     ...mapGetters(['isAdmin']),
-    ...mapState(entity.building, {
-      isLoading: 'isLoading',
-      buildings: 'list',
+    ...mapState(floorMapName, {
+      isLoadingMap: 'isLoading',
+    }),
+    ...mapState(entity.floor, {
+      isLoadingEntity: 'isLoading',
     }),
   },
 })
 export default class AdminView extends Vue {
   private isAdmin!: boolean;
 
-  private buildings!: Array<Building>;
+  private isLoadingMap!: boolean;
 
-  private isLoading!: boolean;
+  private isLoadingEntity!: boolean;
 
-  private fetchBuildings!: () => Promise<Array<Building>>;
+  private floor: Floor = { buildingId: 4 };
 
-  private createBuilding!: (building: Building) => Promise<void>;
+  private createFloor!: (floor: Floor) => Promise<Floor>;
 
-  private deleteBuilding!: (buildingId: number) => Promise<void>;
+  private createMap!: ({
+    id,
+    file,
+  }: {
+    id: number;
+    file: File;
+  }) => Promise<void>;
 
-  private modifyBuilding!: (building: Building) => Promise<void>;
+  private async save(): Promise<void> {
+    this.floor = await this.createFloor(this.floor);
 
-  mounted() {
-    this.fetchBuildings();
+    const file = this.$refs.file.files[0];
+    await this.createMap({ id: this.floor.id!, file });
   }
 }
 </script>

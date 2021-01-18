@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Vuex, { Commit } from 'vuex';
 import authModule from '@/store/auth';
 import entityApi from '@/store/entity-api';
+import floorApi, { NAME as floorMapName } from '@/store/floor-api';
 import axios, { AxiosInstance } from 'axios';
 import * as entity from '@/interfaces/Entity';
 import * as types from './types';
@@ -43,6 +44,7 @@ const store = new Vuex.Store({
   },
   modules: {
     auth: authModule,
+    [floorMapName]: floorApi,
     [entity.NAMES.asset]: entityApi<entity.Asset>(entity.NAMES.asset),
     [entity.NAMES.booking]: entityApi<entity.Booking>(entity.NAMES.booking),
     [entity.NAMES.building]: entityApi<entity.Building>(entity.NAMES.building),

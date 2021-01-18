@@ -45,62 +45,69 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
     },
   },
   actions: {
-    [types.FETCH_LIST]({ state, rootState, commit }:
+    async [types.FETCH_LIST]({ state, rootState, commit }:
       {
         rootState: { axios: AxiosInstance };
         commit: Commit;
         state: { list: Array<S> };
       }): Promise<Array<S>> {
       if (state.list.length) {
-        return new Promise((resolve) => resolve(state.list));
+        return state.list;
       }
 
       commit(types.LOAD, true);
-      return rootState.axios.get(`/api/${entityName}`)
-        .then((response) => response.data)
-        .then((data) => data[entityName])
-        .then((items: Array<S>) => {
-          items.forEach((item) => commit(types.CREATE, item));
+      try {
+        return await rootState.axios.get(`/api/${entityName}`)
+          .then((response) => response.data)
+          .then((data) => data[entityName])
+          .then((items: Array<S>) => {
+            items.forEach((item) => commit(types.CREATE, item));
 
-          return items;
-        })
-        .finally(() => {
-          commit(types.LOAD, false);
-
-          return state.list;
-        });
+            return items;
+          });
+      } finally {
+        commit(types.LOAD, false);
+      }
     },
-    [types.CREATE]({ rootState, commit }:
-      { rootState: { axios: AxiosInstance }; commit: Commit }, item: S): Promise<void> {
+    async [types.CREATE]({ rootState, commit }:
+      { rootState: { axios: AxiosInstance }; commit: Commit }, item: S): Promise<S> {
       commit(types.LOAD, true);
 
-      return rootState.axios.post(`/api/${entityName}`, item)
-        .then((response) => response.data)
-        .then((newCreated) => {
-          commit(types.CREATE, newCreated);
-        }).finally(() => commit(types.LOAD, false));
+      try {
+        return await rootState.axios.post(`/api/${entityName}`, item)
+          .then((response) => response.data)
+          .then((newCreated) => {
+            commit(types.CREATE, newCreated);
+            return newCreated;
+          });
+      } finally {
+        commit(types.LOAD, false);
+      }
     },
-    [types.DETAIL]({ rootState, commit }:
+    async [types.DETAIL]({ rootState, commit }:
       {
         rootState: { axios: AxiosInstance };
         commit: Commit;
-      }, id: number): Promise<void> {
+      }, id: number): Promise<S> {
       commit(types.LOAD, true);
 
-      return rootState.axios.get(`/api/${entityName}/${id}`)
-        .then((response) => response.data)
-        .then((item) => {
-          commit(types.MODIFY, item);
-          return item;
-        })
-        .finally(() => commit(types.LOAD, false));
+      try {
+        return await rootState.axios.get(`/api/${entityName}/${id}`)
+          .then((response) => response.data)
+          .then((item) => {
+            commit(types.MODIFY, item);
+            return item;
+          });
+      } finally {
+        commit(types.LOAD, false);
+      }
     },
-    [types.MODIFY]({ rootState, commit, dispatch }:
+    async [types.MODIFY]({ rootState, commit, dispatch }:
       {
         rootState: { axios: AxiosInstance };
         commit: Commit;
         dispatch: Dispatch;
-      }, item: S): Promise<void> {
+      }, item: S): Promise<S> {
       console.log('Dispatch modify');
 
       if (!item.id) {
@@ -109,10 +116,17 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
 
       commit(types.LOAD, true);
 
-      return rootState.axios.patch(`/api/${entityName}/${item.id}`, item)
-        .then((response) => response.data)
-        .then((data) => commit(types.MODIFY, data))
-        .finally(() => commit(types.LOAD, false));
+      try {
+        return await rootState.axios.patch(`/api/${entityName}/${item.id}`, item)
+          .then((response) => response.data)
+          .then((data) => {
+            commit(types.MODIFY, data);
+
+            return data;
+          });
+      } finally {
+        commit(types.LOAD, false);
+      }
     },
     [types.DELETE]({ rootState, commit }:
       {
