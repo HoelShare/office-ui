@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile
     environment: 
       VUE_APP_API_BASE_URL: http://localhost:8090
+      VUE_APP_AUTH_METHOD: saml
     ports:
       - "127.0.0.1:9999:8080"
     container_name: vue-ui
