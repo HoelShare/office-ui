@@ -25,9 +25,6 @@ export default {
     },
   },
   actions: {
-    initAxios({ dispatch }: { dispatch: Dispatch }) {
-      dispatch('fetchMe');
-    },
     async login({ rootState, dispatch }: { rootState: any; dispatch: Dispatch },
       { username, password }: LoginForm): Promise<LoginResponse> {
       if (!username || !password) {
@@ -65,7 +62,7 @@ export default {
               .then(() => ({ success: true, error: null }));
           });
       } catch (e) {
-        window.location = `${rootState.axios.defaults.baseURL}/api/login`;
+        window.location = `${rootState.axios.defaults.baseURL}/api/login?return_url=${window.location.origin}`;
       }
       return { success: false, error: 'Authorization not completed!\nRedirect to Authentication Provider' };
     },
