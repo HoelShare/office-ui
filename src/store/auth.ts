@@ -25,9 +25,6 @@ export default {
     },
   },
   actions: {
-    initAxios({ dispatch }: { dispatch: Dispatch }, axios: AxiosInstance) {
-      dispatch('fetchMe');
-    },
     async login({ rootState, dispatch }: { rootState: any; dispatch: Dispatch },
       { username, password }: LoginForm): Promise<LoginResponse> {
       if (!username || !password) {
@@ -48,6 +45,26 @@ export default {
       } catch (e) {
         return { success: false, error: e.message };
       }
+    },
+    async doSamlLogin({ rootState, dispatch }:
+      { dispatch: Dispatch; rootState: { axios: AxiosInstance } }): Promise<LoginResponse> {
+      try {
+        return await rootState.axios.get('/api/login', {
+          withCredentials: true,
+        })
+          .then((response: any) => {
+            const { user, message, authToken } = response.data;
+
+            if (!authToken) {
+              return { success: false, error: message };
+            }
+            return dispatch('authUser', { authToken, user }, { root: true })
+              .then(() => ({ success: true, error: null }));
+          });
+      } catch (e) {
+        window.location = `${rootState.axios.defaults.baseURL}/api/login?return_url=${window.location.origin}`;
+      }
+      return { success: false, error: 'Authorization not completed!\nRedirect to Authentication Provider' };
     },
     async authUser({ commit }: { commit: Commit },
       { authToken, user }: { authToken: string; user: User }) {

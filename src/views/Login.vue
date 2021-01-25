@@ -1,83 +1,32 @@
 <template>
   <div class="login">
-    <div class="login-wrapper">
-      <h1 class="title">Login</h1>
-        <TextField v-model="username" />
-        <TextField v-model="password" type="password" />
-        <div v-if="error">{{ error }}</div>
-        <Button @click="doLogin" type="primary">Login</Button>
-    </div>
+    <LdapLoginComponent v-if="method == 'ldap'" />
+    <SamlLoginComponent v-else-if="method == 'saml'" />
+    <p v-else>Unknown Authentication Method</p>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import TextField from '@/components/TextField.vue';
-import Button from '@/components/Button.vue';
-import { mapActions } from 'vuex';
-import { LoginForm } from '@/interfaces/Login';
+import LdapLoginComponent from '@/components/Login/LdapLogin.vue';
+import SamlLoginComponent from '@/components/Login/SamlLogin.vue';
 
 @Component({
-  methods: mapActions(['login']),
   components: {
-    TextField,
-    Button,
+    LdapLoginComponent,
+    SamlLoginComponent,
   },
 })
 export default class LoginView extends Vue {
-  private error: string | null = '';
+  private method: string;
 
-  private username = '';
-
-  private password = '';
-
-  login!: (
-    form: LoginForm
-  ) => Promise<{ success: boolean; error: string | null }>;
-
-  private async doLogin(): Promise<void> {
-    if (this.username === '' || this.password === '') {
-      return;
-    }
-
-    this.error = null;
-    const { success, error } = await this.login({
-      username: this.username,
-      password: this.password,
-    });
-
-    if (success) {
-      this.$router.replace({ name: 'Home' });
-      return;
-    }
-
-    this.error = error;
+  constructor() {
+    super();
+    this.method = process.env.VUE_APP_AUTH_METHOD ?? process.env.AUTH_METHOD ?? 'unknown';
   }
 }
 </script>
 
 <style scoped lang="scss">
-.login-wrapper {
-  width: 40%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-items: center;
-  margin: auto;
 
-  .title {
-    padding-bottom: 84px;
-    font-family: Dosis-ExtraLight_;
-    font-size: 51px;
-    font-weight: bold;
-    letter-spacing: 0.36px;
-    text-align: center;
-    color: var(--color-white);
-  }
-
-  .input-wrapper {
-    width: 100%;
-    padding-bottom: 30px;
-  }
-}
 </style>

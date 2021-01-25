@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Vuex, { Commit } from 'vuex';
+import Vuex, { Commit, Dispatch } from 'vuex';
 import authModule from '@/store/auth';
 import entityApi from '@/store/entity-api';
 import floorApi, { NAME as floorMapName } from '@/store/floor-api';
@@ -36,10 +36,15 @@ const store = new Vuex.Store({
   },
 
   actions: {
-    initAxios({ commit }: { commit: Commit }, axiosInstance: AxiosInstance) {
+    initAxios({ commit, dispatch }:
+      { commit: Commit; dispatch: Dispatch }, axiosInstance: AxiosInstance) {
       commit(types.AUTH_AXIOS, axiosInstance);
       const authToken = localStorage.getItem(types.KEY_AUTH_TOKEN);
       commit(types.AUTHENTICATE, authToken);
+
+      if (authToken) {
+        dispatch('fetchMe');
+      }
     },
   },
   modules: {
