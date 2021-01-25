@@ -9,6 +9,7 @@ export const types = {
   SET_ALL: 'setAll',
   LOAD: 'loading_state',
   DETAIL: 'detail',
+  SET_CURRENT: 'set_current',
 };
 
 export default <S extends { id?: number | undefined }>(entityName: string) => ({
@@ -43,6 +44,9 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
 
       state.list.splice(index, 1);
     },
+    [types.SET_CURRENT](state: { current: S | null }, selected: S | null) {
+      state.current = selected;
+    },
   },
   actions: {
     async [types.FETCH_LIST]({ state, rootState, commit }:
@@ -50,14 +54,14 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
         rootState: { axios: AxiosInstance };
         commit: Commit;
         state: { list: Array<S> };
-      }): Promise<Array<S>> {
-      if (state.list.length) {
+      }, filter?: object | undefined): Promise<Array<S>> {
+      if (state.list.length && !filter) {
         return state.list;
       }
 
       commit(types.LOAD, true);
       try {
-        return await rootState.axios.get(`/api/${entityName}`)
+        return await rootState.axios.get(`/api/${entityName}`, { params: filter })
           .then((response) => response.data)
           .then((data) => data[entityName])
           .then((items: Array<S>) => {
@@ -104,6 +108,15 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
       } finally {
         commit(types.LOAD, false);
       }
+    },
+    async [types.SET_CURRENT]({ dispatch, commit }:
+      {
+        dispatch: Dispatch;
+        commit: Commit;
+      }, id: number): Promise<S> {
+      const response = await dispatch(types.DETAIL, id);
+      commit(types.SET_CURRENT, response);
+      return response;
     },
     async [types.MODIFY]({ rootState, commit, dispatch }:
       {

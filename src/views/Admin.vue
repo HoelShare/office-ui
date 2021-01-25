@@ -13,9 +13,7 @@ import { mapGetters } from 'vuex';
   components: {
     BuildingList,
   },
-  computed: {
-    ...mapGetters(['isAdmin']),
-  },
+  computed: mapGetters(['isAdmin']),
 })
 export default class AdminView extends Vue {
   private isAdmin!: boolean;

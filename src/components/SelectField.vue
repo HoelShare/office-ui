@@ -1,37 +1,52 @@
 <template>
   <div class="select-field">
-    <select :value="value" @input="$emit('input', $event.target.value)">
-      <option
-        v-for="item in list"
-        :key="item[valueField]"
-        :value="item[valueField]"
+    <label :for="id" v-if="label !== null" class="form-label">{{
+      label
+    }}</label>
+    <div class="has-validation">
+      <select
+        :value="value"
+        class="form-control"
+        :class="{ 'is-invalid': errorMessages }"
+        @input="$emit('input', $event.target.value)"
+        :id="id"
       >
-        {{ item[labelField] }}
-      </option>
-    </select>
+        <option
+          v-for="item in list"
+          :key="item[valueField]"
+          :value="item[valueField]"
+        >
+          {{ item[labelField] }}
+        </option>
+      </select>
+      <template v-if="errorMessages">
+        <p v-for="error in errorMessages" :key="error" class="invalid-feedback">
+          {{ error }}
+        </p>
+      </template>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { types } from '@/store/entity-api';
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { mapActions, mapState } from 'vuex';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { mapActions } from 'vuex';
 
 @Component({
-  computed: {
-    ...mapState({
-      list(state: any): any {
-        return state[this.entity].list;
-      },
-    }),
-  },
   methods: mapActions({
-    fetchList(dispatch) {
-      return dispatch(`${this.entity}/${types.FETCH_LIST}`);
+    fetchList(dispatch, params) {
+      return dispatch(`${this.entity}/${types.FETCH_LIST}`, params);
     },
   }),
 })
 export default class SelectField extends Vue {
+  @Prop({
+    required: false,
+    default: () => Math.random().toString(36).substring(7),
+  })
+  private id!: string;
+
   @Prop({ required: true }) private entity!: string;
 
   @Prop({ required: false, default: 'name' }) private labelField!: string;
@@ -40,12 +55,38 @@ export default class SelectField extends Vue {
 
   @Prop({ required: true }) private value!: any;
 
-  private list!: Array<object>;
+  @Prop({ required: false, default: null }) private label!: string | null;
 
-  private fetchList!: () => Promise<Array<object>>;
+  @Prop({ required: false, default: undefined }) private error!:
+    | string
+    | Array<string>
+    | undefined;
 
-  mounted() {
-    this.fetchList();
+  @Prop({
+    required: false,
+    default: undefined,
+  })
+  private filter!: object | undefined;
+
+  private list: Array<object> = [];
+
+  private fetchList!: (filter?: object | undefined) => Promise<Array<object>>;
+
+  get errorMessages(): undefined | Array<string> {
+    if (!this.error) {
+      return undefined;
+    }
+
+    if (this.error instanceof Array) {
+      return this.error;
+    }
+
+    return [this.error];
+  }
+
+  @Watch('filter', { deep: true, immediate: true })
+  private async fetch() {
+    this.list = await this.fetchList(this.filter);
   }
 }
 </script>

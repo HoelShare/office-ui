@@ -1,18 +1,79 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+    <Panel>
+      <div class="row">
+        <div class="col-md-4 col-sm-12">Select Building</div>
+        <div class="col-md-8 col-sm-12">
+          <SelectField
+            entity="building"
+            :value="(selectedBuilding || {}).id"
+            @input="selectBuilding"
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 col-sm-12">Select Floor</div>
+        <div class="col-md-8 col-sm-12">
+          <SelectField
+            entity="floor"
+            :filter="floorFilter"
+            :value="(selectedFloor || {}).id"
+            @input="selectFloor"
+          />
+        </div>
+      </div>
+    </Panel>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+import { mapActions, mapGetters, mapState } from 'vuex';
+import SelectField from '@/components/SelectField.vue';
+import Panel from '@/components/Panel.vue';
+import { Building, Floor, NAMES as entity } from '@/interfaces/Entity';
+import { types } from '@/store/entity-api';
 
 @Component({
   components: {
-    HelloWorld,
+    SelectField,
+    Panel,
+  },
+  computed: {
+    ...mapGetters(['isAdmin']),
+    ...mapState(entity.building, {
+      selectedBuilding: 'current',
+    }),
+    ...mapState(entity.floor, {
+      selectedFloor: 'current',
+    }),
+  },
+  methods: {
+    ...mapActions(entity.building, {
+      selectBuilding: types.SET_CURRENT,
+    }),
+    ...mapActions(entity.floor, {
+      selectFloor: types.SET_CURRENT,
+    }),
   },
 })
-export default class HomeView extends Vue {}
+export default class HomeView extends Vue {
+  private isAdmin!: boolean;
+
+  private selectedBuilding!: Building | null;
+
+  private selectBuilding!: (id: number) => Promise<Building>;
+
+  private selectedFloor!: Floor | null;
+
+  private selectFloor!: (id: number) => Promise<Floor>;
+
+  private get floorFilter(): object | undefined {
+    if (!this.selectedBuilding) {
+      return undefined;
+    }
+
+    return { where: { building: this.selectedBuilding.id } };
+  }
+}
 </script>
