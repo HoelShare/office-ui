@@ -1,9 +1,15 @@
 <template>
-  <select :value="value" @input="$emit('input', $event.target.value)">
-    <option v-for="item in list" :key="item[valueField]" :value="item[valueField]">
-      {{ item[labelField] }}
-    </option>
-  </select>
+  <div class="select-field">
+    <select :value="value" @input="$emit('input', $event.target.value)">
+      <option
+        v-for="item in list"
+        :key="item[valueField]"
+        :value="item[valueField]"
+      >
+        {{ item[labelField] }}
+      </option>
+    </select>
+  </div>
 </template>
 
 <script lang="ts">
@@ -44,5 +50,5 @@ export default class SelectField extends Vue {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 </style>

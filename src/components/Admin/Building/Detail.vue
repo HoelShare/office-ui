@@ -9,7 +9,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import { mapGetters } from 'vuex';
 
 @Component
-export default class ModifyBuilding extends Vue {
+export default class BuildingDetail extends Vue {
 }
 </script>
 

@@ -2,8 +2,9 @@
   <button
     :type="buttonType"
     @click="active ? $emit('click') : null"
-    class="button"
+    class="btn"
     :class="classes"
+    :disabled="!active"
   >
     <slot />
   </button>
@@ -22,17 +23,32 @@ export default class Button extends Vue {
 
   @Prop({
     required: false,
-    default: 'secondary',
-    validator: (value) => ['primary', 'secondary'].indexOf(value) !== -1,
+    default: 'default',
+    validator: (value) =>
+      [
+        'primary',
+        'secondary',
+        'success',
+        'danger',
+        'warning',
+        'info',
+        'light',
+        'dark',
+        'link',
+        'default',
+      ].indexOf(value) !== -1,
   })
   private type!: string;
 
   @Prop({
     required: false,
     default: 'normal',
-    validator: (value) => ['small', 'normal', 'big'].indexOf(value) !== -1,
+    validator: (value) =>
+      ['extra-small', 'small', 'normal', 'big'].indexOf(value) !== -1,
   })
   private size!: string;
+
+  @Prop({ required: false, default: false }) private outline!: boolean;
 
   get buttonType(): string {
     if (this.type === 'primary') {
@@ -43,64 +59,16 @@ export default class Button extends Vue {
   }
 
   get classes() {
+    const outlinePrefix = this.outline ? '-outline' : '';
     return {
-      primary: this.type === 'primary',
-      secondary: this.type === 'secondary',
-      'size--normal': this.size === 'normal',
-      'size--small': this.size === 'small',
-      'size--big': this.size === 'big',
-      'in-active': !this.active,
+      [`btn${outlinePrefix}-${this.type}`]: true,
+      'btn-xs': this.size === 'extra-small',
+      'btn-sm': this.size === 'small',
+      'btn-lg': this.size === 'big',
     };
   }
 }
 </script>
 
 <style scoped lang="scss">
-.button {
-  box-sizing: border-box;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  cursor: pointer;
-  user-select: none;
-  font-weight: bold;
-  text-align: center;
-  color: var(--color-white);
-
-  border: solid 2px var(--color-primary);
-
-  &.size--big {
-    padding: 23px;
-    border-radius: 10px;
-    font-size: 23px;
-  }
-
-  &.size--normal {
-    padding: 10px 15px;
-    border-radius: 10px;
-    font-size: 19px;
-  }
-
-  &.size--small {
-    padding: 3px 5px;
-    border-radius: 10px;
-    font-size: 14px;
-  }
-
-  &:not(.primary) {
-    background-color: var(--color-gray);
-  }
-
-  &.primary {
-    background-color: var(--color-primary);
-  }
-
-  &.in-active {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-}
 </style>

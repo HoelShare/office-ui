@@ -70,7 +70,10 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
       }
     },
     async [types.CREATE]({ rootState, commit }:
-      { rootState: { axios: AxiosInstance }; commit: Commit }, item: S): Promise<S> {
+      {
+        rootState: { axios: AxiosInstance };
+        commit: Commit;
+      }, item: S): Promise<S | { error: object }> {
       commit(types.LOAD, true);
 
       try {
@@ -108,8 +111,6 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
         commit: Commit;
         dispatch: Dispatch;
       }, item: S): Promise<S> {
-      console.log('Dispatch modify');
-
       if (!item.id) {
         return dispatch(types.CREATE, item);
       }

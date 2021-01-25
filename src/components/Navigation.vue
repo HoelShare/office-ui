@@ -1,14 +1,45 @@
 <template>
-  <div class="navigation">
-    <router-link :to="{ name: 'Home' }">Home</router-link> |
-    <router-link :to="{ name: 'Bookings' }">Bookings</router-link> |
-    <template v-if="isAdmin">
-      <router-link :to="{ name: 'Admin' }">Admin</router-link>
-      |
-    </template>
-    <router-link :to="{ name: 'About' }">About</router-link> |
-    <router-link :to="{ name: 'Logout' }">Logout</router-link>
-  </div>
+  <nav class="navbar navbar-expand">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="https://github.com/hoelshare/office-ui"
+        >GitHub</a
+      >
+      <ul class="navbar-nav">
+        <router-link
+          exact-active-class="active"
+          class="nav-link"
+          :to="{ name: 'Home' }"
+          >Home</router-link
+        >
+        <router-link
+          active-class="active"
+          class="nav-link"
+          :to="{ name: 'Bookings' }"
+          >Bookings</router-link
+        >
+        <template v-if="isAdmin">
+          <router-link
+            active-class="active"
+            class="nav-link"
+            :to="{ name: 'Admin' }"
+            >Admin</router-link
+          >
+        </template>
+        <router-link
+          active-class="active"
+          class="nav-link"
+          :to="{ name: 'About' }"
+          >About</router-link
+        >
+        <router-link
+          active-class="active"
+          class="nav-link"
+          :to="{ name: 'Logout' }"
+          >Logout</router-link
+        >
+      </ul>
+    </div>
+  </nav>
 </template>
 
 <script lang="ts">
@@ -26,16 +57,4 @@ export default class Navigation extends Vue {
 </script>
 
 <style scoped lang="scss">
-.navigation {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
 </style>
