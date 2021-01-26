@@ -28,6 +28,7 @@ export default class Button extends Vue {
       [
         'primary',
         'secondary',
+        'close',
         'success',
         'danger',
         'warning',

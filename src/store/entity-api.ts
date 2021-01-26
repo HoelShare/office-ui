@@ -21,6 +21,11 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
   },
   mutations: {
     [types.CREATE](state: { list: Array<S> }, newCreated: S) {
+      const index = state.list.findIndex((item) => item.id === newCreated.id);
+      if (index !== -1) {
+        state.list.splice(index, 1, newCreated);
+        return;
+      }
       state.list.push(newCreated);
     },
     [types.SET_ALL](state: { list: Array<S> }, list: Array<S>) {
@@ -148,7 +153,6 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
         commit: Commit;
       }, id: number): Promise<void> {
       commit(types.LOAD, true);
-
       return rootState.axios.delete(`/api/${entityName}/${id}`)
         .then(() => commit(types.DELETE, id))
         .finally(() => commit(types.LOAD, false));

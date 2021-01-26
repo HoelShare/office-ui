@@ -4,11 +4,9 @@
       <div v-for="building in list" :key="building.id">
         <BuildingListItem :building="building" />
       </div>
-      <template v-if="list.length === 0">
-        Currently no Buildings.
-      </template>
+      <template v-if="list.length === 0"> Currently no Buildings. </template>
+      <BuildingCreate />
     </Panel>
-    <BuildingCreate />
   </div>
 </template>
 

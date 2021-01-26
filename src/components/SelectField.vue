@@ -31,7 +31,7 @@
 <script lang="ts">
 import { types } from '@/store/entity-api';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 
 @Component({
   methods: mapActions({
@@ -87,6 +87,14 @@ export default class SelectField extends Vue {
   @Watch('filter', { deep: true, immediate: true })
   private async fetch() {
     this.list = await this.fetchList(this.filter);
+
+    const renew = this.list.some((value) => value[this.valueField] === this.value);
+
+    if ((this.value !== undefined || this.list.length === 0)) {
+      return;
+    }
+
+    this.$emit('input', this.list[0][this.valueField]);
   }
 }
 </script>
