@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { RootState } from '@/interfaces/States';
 import { Commit } from 'vuex';
 import { types } from './entity-api';
 
@@ -21,10 +21,13 @@ export default {
   actions: {
     [types.CREATE]({ rootState, commit }:
       {
-        rootState:
-        { axios: AxiosInstance }; commit: Commit;
+        rootState: RootState; commit: Commit;
       }, { file, id }:
         { file: File; id: number }): Promise<void> {
+      if (!rootState.axios) {
+        return new Promise((resolve) => resolve());
+      }
+
       commit(types.LOAD, true);
       const formData = new FormData();
       formData.append('file', file);

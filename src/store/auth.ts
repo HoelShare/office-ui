@@ -1,7 +1,7 @@
 import { LoginForm, LoginResponse } from '@/interfaces/Login';
 import { User } from '@/interfaces/Entity';
-import { AxiosInstance } from 'axios';
 import { Commit, Dispatch } from 'vuex';
+import { RootState } from '@/interfaces/States';
 import * as types from './types';
 
 export default {
@@ -25,14 +25,14 @@ export default {
     },
   },
   actions: {
-    async login({ rootState, dispatch }: { rootState: any; dispatch: Dispatch },
+    async login({ rootState, dispatch }: { rootState: RootState; dispatch: Dispatch },
       { username, password }: LoginForm): Promise<LoginResponse> {
       if (!username || !password) {
         return { success: false, error: 'Kein Username / password' };
       }
 
       try {
-        return await rootState.axios.post('/api/login', { username, password })
+        return await rootState.axios!.post('/api/login', { username, password })
           .then((response: any) => {
             const { user, message, authToken } = response.data;
 
@@ -47,9 +47,9 @@ export default {
       }
     },
     async doSamlLogin({ rootState, dispatch }:
-      { dispatch: Dispatch; rootState: { axios: AxiosInstance } }): Promise<LoginResponse> {
+      { dispatch: Dispatch; rootState: RootState }): Promise<LoginResponse> {
       try {
-        return await rootState.axios.get('/api/login', {
+        return await rootState.axios!.get('/api/login', {
           withCredentials: true,
         })
           .then((response: any) => {
@@ -62,7 +62,7 @@ export default {
               .then(() => ({ success: true, error: null }));
           });
       } catch (e) {
-        window.location = `${rootState.axios.defaults.baseURL}/api/login?return_url=${window.location.origin}`;
+        window.location.href = `${rootState.axios!.defaults.baseURL}/api/login?return_url=${window.location.origin}`;
       }
       return { success: false, error: 'Authorization not completed!\nRedirect to Authentication Provider' };
     },
@@ -71,17 +71,17 @@ export default {
       commit(types.AUTH_USER, user, { root: true });
       commit(types.AUTHENTICATE, authToken, { root: true });
     },
-    async logout({ rootState, commit }: { rootState: any; commit: Commit }) {
+    async logout({ rootState, commit }: { rootState: RootState; commit: Commit }) {
       if (rootState.authToken !== null) {
-        rootState.axios.post('/api/logout');
+        rootState.axios!.post('/api/logout');
       }
 
       commit(types.AUTH_USER, null, { root: true });
       commit(types.AUTHENTICATE, null, { root: true });
     },
-    async fetchMe({ rootState, commit }: { commit: Commit; rootState: { axios: AxiosInstance } }) {
+    async fetchMe({ rootState, commit }: { commit: Commit; rootState: RootState }) {
       try {
-        const { data } = await rootState.axios.get('/api/user/me');
+        const { data } = await rootState.axios!.get('/api/user/me');
         commit(types.AUTH_USER, data.user, { root: true });
       } catch (e) {
         // nth

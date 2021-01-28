@@ -1,3 +1,4 @@
+import { RootState } from '@/interfaces/States';
 import { AxiosInstance } from 'axios';
 import { Commit, Dispatch } from 'vuex';
 
@@ -56,7 +57,7 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
   actions: {
     async [types.FETCH_LIST]({ state, rootState, commit }:
       {
-        rootState: { axios: AxiosInstance };
+        rootState: RootState;
         commit: Commit;
         state: { list: Array<S> };
       }, filter?: object | undefined): Promise<Array<S>> {
@@ -66,7 +67,7 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
 
       commit(types.LOAD, true);
       try {
-        return await rootState.axios.get(`/api/${entityName}`, { params: filter })
+        return await rootState.axios!.get(`/api/${entityName}`, { params: filter })
           .then((response) => response.data)
           .then((data) => data[entityName])
           .then((items: Array<S>) => {
@@ -80,13 +81,13 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
     },
     async [types.CREATE]({ rootState, commit }:
       {
-        rootState: { axios: AxiosInstance };
+        rootState: RootState;
         commit: Commit;
       }, item: S): Promise<S | { error: object }> {
       commit(types.LOAD, true);
 
       try {
-        return await rootState.axios.post(`/api/${entityName}`, item)
+        return await rootState.axios!.post(`/api/${entityName}`, item)
           .then((response) => response.data)
           .then((newCreated) => {
             commit(types.CREATE, newCreated);
@@ -98,13 +99,13 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
     },
     async [types.DETAIL]({ rootState, commit }:
       {
-        rootState: { axios: AxiosInstance };
+        rootState: RootState;
         commit: Commit;
       }, id: number): Promise<S> {
       commit(types.LOAD, true);
 
       try {
-        return await rootState.axios.get(`/api/${entityName}/${id}`)
+        return await rootState.axios!.get(`/api/${entityName}/${id}`)
           .then((response) => response.data)
           .then((item) => {
             commit(types.MODIFY, item);
@@ -125,7 +126,7 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
     },
     async [types.MODIFY]({ rootState, commit, dispatch }:
       {
-        rootState: { axios: AxiosInstance };
+        rootState: RootState;
         commit: Commit;
         dispatch: Dispatch;
       }, item: S): Promise<S> {
@@ -136,7 +137,7 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
       commit(types.LOAD, true);
 
       try {
-        return await rootState.axios.patch(`/api/${entityName}/${item.id}`, item)
+        return await rootState.axios!.patch(`/api/${entityName}/${item.id}`, item)
           .then((response) => response.data)
           .then((data) => {
             commit(types.MODIFY, data);
@@ -149,11 +150,11 @@ export default <S extends { id?: number | undefined }>(entityName: string) => ({
     },
     [types.DELETE]({ rootState, commit }:
       {
-        rootState: { axios: AxiosInstance };
+        rootState: RootState;
         commit: Commit;
       }, id: number): Promise<void> {
       commit(types.LOAD, true);
-      return rootState.axios.delete(`/api/${entityName}/${id}`)
+      return rootState.axios!.delete(`/api/${entityName}/${id}`)
         .then(() => commit(types.DELETE, id))
         .finally(() => commit(types.LOAD, false));
     },

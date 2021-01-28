@@ -88,13 +88,13 @@ export default class SelectField extends Vue {
   private async fetch() {
     this.list = await this.fetchList(this.filter);
 
-    const renew = this.list.some((value) => value[this.valueField] === this.value);
+    const renew = this.list.some((value) => (value as any)[this.valueField] === this.value);
 
-    if ((this.value !== undefined || this.list.length === 0)) {
+    if (!renew && (this.value !== undefined || this.list.length === 0)) {
       return;
     }
 
-    this.$emit('input', this.list[0][this.valueField]);
+    this.$emit('input', (this.list[0] as any)[this.valueField]);
   }
 }
 </script>

@@ -4,12 +4,13 @@ import authModule from '@/store/auth';
 import entityApi from '@/store/entity-api';
 import floorApi, { NAME as floorMapName } from '@/store/floor-api';
 import axios, { AxiosInstance } from 'axios';
+import { RootState } from '@/interfaces/States';
 import * as entity from '@/interfaces/Entity';
 import * as types from './types';
 
 Vue.use(Vuex);
 
-const store = new Vuex.Store({
+const store = new Vuex.Store<RootState>({
   state: {
     axios: null as AxiosInstance | null,
     authToken: null as string | null,
