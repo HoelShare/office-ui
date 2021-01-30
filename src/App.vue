@@ -5,18 +5,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 import { mapGetters } from 'vuex';
 import Authenticated from '@/layout/Authenticated.vue';
-import LayoutLogin from '@/layout/Login.vue';
+import Login from '@/layout/Login.vue';
 
 @Component<App>({
   computed: {
     ...mapGetters(['isAuthenticated']),
   },
   components: {
-    [Authenticated.name]: Authenticated,
-    [LayoutLogin.name]: LayoutLogin,
+    LayoutAuthenticated: Authenticated,
+    LayoutLogin: Login,
   },
 })
 export default class App extends Vue {
@@ -24,10 +24,10 @@ export default class App extends Vue {
 
   private get getLayout(): string {
     if (this.isAuthenticated) {
-      return Authenticated.name;
+      return 'LayoutAuthenticated';
     }
 
-    return LayoutLogin.name;
+    return 'LayoutLogin';
   }
 }
 </script>
