@@ -15,7 +15,7 @@ import { mapGetters } from 'vuex';
   },
   computed: mapGetters(['isAdmin']),
 })
-export default class AdminView extends Vue {
+export default class AdminBuildingView extends Vue {
   private isAdmin!: boolean;
 }
 </script>

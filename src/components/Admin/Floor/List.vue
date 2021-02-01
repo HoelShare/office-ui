@@ -1,6 +1,6 @@
 <template>
   <div class="floor-list">
-    <template v-if="!building"> No building selected </template>
+    <template v-if="!building">No building selected </template>
     <template v-else>
       <div v-for="floor in list" :key="floor.id">
         <FloorListItem class="mb-2" :floor="floor" @deleted="fetch" />
@@ -13,8 +13,8 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import FloorListItem from '@/components/Floor/ListItem.vue';
-import FloorCreate from '@/components/Floor/Create.vue';
+import FloorListItem from '@/components/Admin/Floor/ListItem.vue';
+import FloorCreate from '@/components/Admin/Floor/Create.vue';
 import Panel from '@/components/Panel.vue';
 import { mapActions, mapGetters } from 'vuex';
 import { Building, Floor, NAMES as entity } from '@/interfaces/Entity';

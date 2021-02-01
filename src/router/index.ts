@@ -25,9 +25,25 @@ const routes: Array<RouteConfig> = [
     component: () => import(/* webpackChunkName: "bookings" */ '@/views/BookingList.vue'),
   },
   {
-    path: '/admin',
-    name: 'Admin',
-    component: () => import(/* webpackChunkName: "admin" */ '@/views/Admin.vue'),
+    path: '/admin/building',
+    name: 'AdminBuilding',
+    component: () => import(/* webpackChunkName: "admin" */ '@/views/Admin/Building.vue'),
+    meta: {
+      requireAdmin: true,
+    },
+  },
+  {
+    path: '/admin/floor',
+    name: 'AdminFloor',
+    component: () => import(/* webpackChunkName: "admin" */ '@/views/Admin/Floor.vue'),
+    meta: {
+      requireAdmin: true,
+    },
+  },
+  {
+    path: '/admin/seat',
+    name: 'AdminSeat',
+    component: () => import(/* webpackChunkName: "admin" */ '@/views/Admin/Seat.vue'),
     meta: {
       requireAdmin: true,
     },

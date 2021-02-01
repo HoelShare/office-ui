@@ -15,6 +15,11 @@ const store = new Vuex.Store<RootState>({
     axios: null as AxiosInstance | null,
     authToken: null as string | null,
   },
+  getters: {
+    baseUrl(state) {
+      return state.axios?.defaults.baseURL;
+    },
+  },
   mutations: {
     [types.AUTHENTICATE](state: any, authToken: string | null) {
       if (authToken) {

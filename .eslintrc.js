@@ -16,6 +16,8 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'implicit-arrow-linebreak': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'object-curly-newline': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'operator-linebreak': 'off',
+    'class-methods-use-this': 'off',
   },
   overrides: [
     {
