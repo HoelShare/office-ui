@@ -49,6 +49,14 @@ const routes: Array<RouteConfig> = [
     },
   },
   {
+    path: '/admin/asset',
+    name: 'AdminAsset',
+    component: () => import(/* webpackChunkName: "admin" */ '@/views/Admin/Asset.vue'),
+    meta: {
+      requireAdmin: true,
+    },
+  },
+  {
     path: '/about',
     name: 'About',
     // route level code-splitting

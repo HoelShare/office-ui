@@ -51,6 +51,11 @@
                   >Seats</router-link
                 >
               </li>
+              <li>
+                <router-link class="dropdown-item" :to="{ name: 'AdminAsset' }"
+                  >Assets</router-link
+                >
+              </li>
             </ul>
           </li>
         </template>

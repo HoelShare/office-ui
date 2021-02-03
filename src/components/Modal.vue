@@ -15,6 +15,7 @@
             <slot />
           </div>
           <div class="modal-footer">
+            <slot name="additional-footer" />
             <slot name="footer">
               <Button type="secondary" @click="$emit('close')"> Close </Button>
               <Button type="primary">

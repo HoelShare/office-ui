@@ -26,9 +26,12 @@
         <div class="w-100">
           <img
             v-if="selectedFloor && selectedFloor.floorPath"
-            @click="addSeat"
+            @click="setSeatLocation"
             class="img-fluid"
             :src="`${baseUrl}/${selectedFloor.floorPath}`"
+            @dragover.prevent
+            @dragenter.prevent
+            @drop="onDrop"
           />
           <div
             v-for="seat in seats"
@@ -36,7 +39,25 @@
             class="seat"
             :style="seatStyles(seat)"
             :class="seatClass(seat)"
+            @click.prevent="newSeat = seat"
+            draggable
+            @dragstart="startDrag($event, seat)"
           ></div>
+          <Modal
+            :show="newSeat !== null"
+            @save="addSeat"
+            @close="newSeat = null"
+          >
+            <template #title>Add New Seat </template>
+            <template v-if="newSeat">
+              <TextField v-model="newSeat.number" />
+            </template>
+            <template #additional-footer>
+              <Button @click="doDeleteSeat(newSeat)" type="danger"
+                >Delete</Button
+              >
+            </template>
+          </Modal>
         </div>
       </div>
     </Panel>
@@ -48,6 +69,9 @@ import { Component, Vue, Watch } from 'vue-property-decorator';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import SelectField from '@/components/SelectField.vue';
 import Panel from '@/components/Panel.vue';
+import Modal from '@/components/Modal.vue';
+import TextField from '@/components/TextField.vue';
+import Button from '@/components/Button.vue';
 import { Building, Floor, NAMES as entity, Seat } from '@/interfaces/Entity';
 import { types } from '@/store/entity-api';
 
@@ -55,6 +79,9 @@ import { types } from '@/store/entity-api';
   components: {
     SelectField,
     Panel,
+    Modal,
+    TextField,
+    Button,
   },
   computed: {
     ...mapGetters(['isAdmin', 'baseUrl']),
@@ -78,6 +105,8 @@ import { types } from '@/store/entity-api';
     ...mapActions(entity.seat, {
       fetchSeats: types.FETCH_LIST,
       createSeat: types.CREATE,
+      modifySeat: types.MODIFY,
+      deleteSeat: types.DELETE,
     }),
   },
 })
@@ -96,14 +125,20 @@ export default class AdminSeatView extends Vue {
 
   private createSeat!: (seat: Seat) => Promise<void>;
 
+  private modifySeat!: (seat: Seat) => Promise<void>;
+
+  private deleteSeat!: (id: number) => Promise<void>;
+
   private baseUrl!: string | undefined;
 
   private seats: Array<Seat> = [];
 
+  private newSeat: Seat | null = null;
+
   private seatClass(seat: Seat) {
     return {
       available: true,
-      blocked: seat.number === 0,
+      blocked: seat?.number === 0,
     };
   }
 
@@ -114,20 +149,43 @@ export default class AdminSeatView extends Vue {
     };
   }
 
-  private addSeat(e: MouseEvent) {
+  private setSeatLocation(e: MouseEvent) {
     const imageElement = e.target as HTMLImageElement;
     if (!imageElement) {
       return;
     }
 
-    const x = ((e.offsetX - 10) * 100) / imageElement.width;
-    const y = ((e.offsetY - 10) * 100) / imageElement.height;
-    this.createSeat({
-      locationX: x,
-      locationY: y,
-      floorId: this.selectedFloor?.id!,
+    this.newSeat = {
+      floorId: this.selectedFloor!.id!,
       number: 0,
-    }).then(this.updateSeats);
+      locationX: ((e.offsetX - 10) * 100) / imageElement.width,
+      locationY: ((e.offsetY - 10) * 100) / imageElement.height,
+    };
+  }
+
+  private addSeat(): void {
+    if (!this.newSeat) {
+      return;
+    }
+
+    this.createSeat(this.newSeat)
+      .then(this.updateSeats)
+      .then(() => {
+        this.newSeat = null;
+      });
+  }
+
+  private doDeleteSeat(newSeat: Seat): void {
+    if (!newSeat.id) {
+      this.newSeat = null;
+      return;
+    }
+
+    this.deleteSeat(newSeat.id)
+      .then(this.updateSeats)
+      .then(() => {
+        this.newSeat = null;
+      });
   }
 
   private get floorFilter() {
@@ -151,13 +209,50 @@ export default class AdminSeatView extends Vue {
 
     this.seats = await this.fetchSeats(this.seatFilter);
   }
+
+  private startDrag(event: DragEvent, seat: Seat): void {
+    /* eslint-disable no-param-reassign */
+    event.dataTransfer!.dropEffect = 'move';
+    event.dataTransfer!.effectAllowed = 'move';
+    event.dataTransfer!.setData('seat', seat.id!.toString());
+    event.dataTransfer!.setData('offsetX', event.offsetX.toString());
+    event.dataTransfer!.setData('offsetY', event.offsetY.toString());
+  }
+
+  private onDrop(event: DragEvent) {
+    if (!event.dataTransfer || !event.dataTransfer.getData('seat')) {
+      return;
+    }
+
+    const seatId = Number(event.dataTransfer.getData('seat'));
+    const seat = this.seats.find((checkSeat) => checkSeat.id === seatId);
+
+    if (!seat) {
+      return;
+    }
+
+    const imageElement = event.target as HTMLImageElement;
+
+    if (!imageElement) {
+      return;
+    }
+
+    const origOffsetX = Number(event.dataTransfer.getData('offsetX') ?? 0);
+    const origOffsetY = Number(event.dataTransfer.getData('offsetY') ?? 0);
+
+    seat.locationX = ((event.offsetX - origOffsetX) * 100) / imageElement.width;
+    seat.locationY =
+      ((event.offsetY - origOffsetY) * 100) / imageElement.height;
+
+    this.modifySeat(seat).then(this.updateSeats);
+  }
 }
 </script>
 
 <style lang="scss" scoped>
 .seat-admin {
   .position-relative {
-    background: hsla(0,0%,100%,.1);
+    background: hsla(0, 0%, 100%, 0.1);
     z-index: 1;
   }
 
