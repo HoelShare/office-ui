@@ -43,21 +43,7 @@
             draggable
             @dragstart="startDrag($event, seat)"
           ></div>
-          <Modal
-            :show="newSeat !== null"
-            @save="addSeat"
-            @close="newSeat = null"
-          >
-            <template #title>Add New Seat </template>
-            <template v-if="newSeat">
-              <TextField v-model="newSeat.number" />
-            </template>
-            <template #additional-footer>
-              <Button @click="doDeleteSeat(newSeat)" type="danger"
-                >Delete</Button
-              >
-            </template>
-          </Modal>
+          <SeatModal :seat="newSeat" @close="closeModal" />
         </div>
       </div>
     </Panel>
@@ -69,7 +55,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import SelectField from '@/components/SelectField.vue';
 import Panel from '@/components/Panel.vue';
-import Modal from '@/components/Modal.vue';
+import SeatModal from '@/components/Admin/Seat/Modal.vue';
 import TextField from '@/components/TextField.vue';
 import Button from '@/components/Button.vue';
 import { Building, Floor, NAMES as entity, Seat } from '@/interfaces/Entity';
@@ -79,7 +65,7 @@ import { types } from '@/store/entity-api';
   components: {
     SelectField,
     Panel,
-    Modal,
+    SeatModal,
     TextField,
     Button,
   },
@@ -104,7 +90,6 @@ import { types } from '@/store/entity-api';
     }),
     ...mapActions(entity.seat, {
       fetchSeats: types.FETCH_LIST,
-      createSeat: types.CREATE,
       modifySeat: types.MODIFY,
       deleteSeat: types.DELETE,
     }),
@@ -123,11 +108,7 @@ export default class AdminSeatView extends Vue {
 
   private fetchSeats!: (filter?: object) => Promise<Array<Seat>>;
 
-  private createSeat!: (seat: Seat) => Promise<void>;
-
   private modifySeat!: (seat: Seat) => Promise<void>;
-
-  private deleteSeat!: (id: number) => Promise<void>;
 
   private baseUrl!: string | undefined;
 
@@ -163,31 +144,6 @@ export default class AdminSeatView extends Vue {
     };
   }
 
-  private addSeat(): void {
-    if (!this.newSeat) {
-      return;
-    }
-
-    this.createSeat(this.newSeat)
-      .then(this.updateSeats)
-      .then(() => {
-        this.newSeat = null;
-      });
-  }
-
-  private doDeleteSeat(newSeat: Seat): void {
-    if (!newSeat.id) {
-      this.newSeat = null;
-      return;
-    }
-
-    this.deleteSeat(newSeat.id)
-      .then(this.updateSeats)
-      .then(() => {
-        this.newSeat = null;
-      });
-  }
-
   private get floorFilter() {
     if (!this.selectedBuilding) {
       return undefined;
@@ -203,10 +159,13 @@ export default class AdminSeatView extends Vue {
     return { where: { floor: this.selectedFloor.id }, limit: 100 };
   }
 
+  private closeModal() {
+    this.newSeat = null;
+    this.updateSeats();
+  }
+
   @Watch('seatFilter')
   private async updateSeats() {
-    console.log('Update seats');
-
     this.seats = await this.fetchSeats(this.seatFilter);
   }
 

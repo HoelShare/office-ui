@@ -1,5 +1,4 @@
 import { RootState } from '@/interfaces/States';
-import { AxiosInstance } from 'axios';
 import { Commit, Dispatch } from 'vuex';
 
 export const types = {
