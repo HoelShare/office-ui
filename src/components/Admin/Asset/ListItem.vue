@@ -1,7 +1,7 @@
 <template>
-  <div class="floor-list-item">
+  <div class="asset-list-item">
     <Expandable class="row" :isExpanded="!isEditMode">
-      <div class="col-md-8 col-xs-12">{{ floor.name }}</div>
+      <div class="col-md-8 col-xs-12">{{ asset.name }}</div>
       <div class="col-md-4 col-xs-12" v-if="isAdmin">
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
           <Button @click="isEditMode = true" class="me-md-2" type="primary"
@@ -9,7 +9,7 @@
           >
           <Button
             @click="onDelete"
-            :active="!isLoading && floor.id"
+            :active="!isLoading && asset.id"
             type="danger"
             >Delete</Button
           >
@@ -18,12 +18,7 @@
     </Expandable>
     <Expandable :isExpanded="isEditMode" v-if="isAdmin">
       <form @submit.prevent="onSave">
-        <TextField v-model="floor.name" label="Name" :error="error.name" />
-        <TextField
-          v-model="floor.number"
-          label="Number"
-          :error="error.number"
-        />
+        <TextField v-model="asset.name" label="Name" :error="error.name" />
         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-2">
           <Button class="me-md-2" type="primary" :active="!isLoading"
             >Save</Button
@@ -31,7 +26,7 @@
           <Button
             type="danger"
             @click="onDelete"
-            :active="!isLoading && floor.id"
+            :active="!isLoading && asset.id"
             >Delete</Button
           >
         </div>
@@ -41,56 +36,56 @@
 </template>
 
 <script lang="ts">
-import Button from '@/components/Button.vue';
-import TextField from '@/components/TextField.vue';
-import Expandable from '@/components/Expandable.vue';
-import { Floor, NAMES as entity } from '@/interfaces/Entity';
-import { types } from '@/store/entity-api';
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import Button from '@/components/Button.vue';
+import Expandable from '@/components/Expandable.vue';
+import TextField from '@/components/TextField.vue';
 import { mapActions, mapGetters, mapState } from 'vuex';
+import { types } from '@/store/entity-api';
+import { Asset, NAMES as entity } from '@/interfaces/Entity';
 
 @Component({
   components: {
     Button,
-    TextField,
     Expandable,
+    TextField,
   },
   computed: {
     ...mapGetters(['isAdmin']),
-    ...mapState(entity.floor, ['isLoading']),
+    ...mapState(entity.asset, ['isLoading']),
   },
-  methods: mapActions(entity.floor, {
-    deleteFloor: types.DELETE,
-    modifyFloor: types.MODIFY,
+  methods: mapActions(entity.asset, {
+    deleteAsset: types.DELETE,
+    modifyAsset: types.MODIFY,
   }),
 })
-export default class FloorListItem extends Vue {
-  @Prop({ required: true }) private floor!: Floor;
-
-  private isAdmin!: boolean;
+export default class AssetListItem extends Vue {
+  @Prop({ required: true }) private asset!: Asset;
 
   private isEditMode = false;
 
+  private isAdmin!: boolean;
+
   private isLoading!: boolean;
 
-  private deleteFloor!: (id: number) => Promise<void>;
+  private deleteAsset!: (id: number) => Promise<void>;
 
-  private modifyFloor!: (floor: Floor) => Promise<Floor>;
+  private modifyAsset!: (asset: Asset) => Promise<Asset>;
 
   private error: object = {};
 
   private async onDelete() {
-    if (!this.floor.id) {
+    if (!this.asset.id) {
       return;
     }
 
-    await this.deleteFloor(this.floor.id);
-    this.$emit('deleted', this.floor);
+    await this.deleteAsset(this.asset.id);
+    this.$emit('deleted', this.asset);
   }
 
   private async onSave() {
     try {
-      await this.modifyFloor(this.floor);
+      await this.modifyAsset(this.asset);
       this.error = {};
       this.isEditMode = false;
     } catch (axiosError) {

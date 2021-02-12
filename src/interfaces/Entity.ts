@@ -44,6 +44,8 @@ export interface SeatAsset {
   id?: number | undefined;
   seatId: number;
   assetId: number;
+  asset?: Asset | undefined;
+  seat?: Seat | undefined;
   priority: number;
 }
 
@@ -62,6 +64,6 @@ export const NAMES = {
   building: 'building',
   floor: 'floor',
   seat: 'seat',
-  seatAsset: 'seat-asset',
+  seatAsset: 'seatAsset',
   user: 'user',
 };

@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="floor-admin">
     <Panel>
       <div class="row mb-2">
         <div class="col-md-4 col-sm-12">Select Building</div>
@@ -12,7 +12,7 @@
         </div>
       </div>
       <div class="row">
-        <FloorList :building="selectedBuilding"/>
+        <FloorList :building="selectedBuilding" />
       </div>
     </Panel>
   </div>
@@ -45,7 +45,7 @@ import FloorList from '@/components/Admin/Floor/List.vue';
     }),
   },
 })
-export default class HomeView extends Vue {
+export default class AdminFloorView extends Vue {
   private isAdmin!: boolean;
 
   private selectedBuilding!: Building | null;

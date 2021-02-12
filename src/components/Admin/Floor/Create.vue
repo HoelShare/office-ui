@@ -18,6 +18,7 @@
         label="Number"
         :error="error.number"
       />
+      <input type="file" ref="file" />
     </Modal>
   </div>
 </template>
@@ -30,6 +31,7 @@ import TextField from '@/components/TextField.vue';
 import Button from '@/components/Button.vue';
 import Modal from '@/components/Modal.vue';
 import { mapActions, mapState } from 'vuex';
+import { NAME as floorMapName } from '@/store/floor-api';
 
 @Component({
   components: {
@@ -37,9 +39,14 @@ import { mapActions, mapState } from 'vuex';
     Button,
     Modal,
   },
-  methods: mapActions(entity.floor, {
-    createFloor: types.CREATE,
-  }),
+  methods: {
+    ...mapActions(entity.floor, {
+      createFloor: types.CREATE,
+    }),
+    ...mapActions(floorMapName, {
+      createMap: types.CREATE,
+    }),
+  },
   computed: {
     ...mapState(entity.floor, ['isLoading']),
     ...mapState(entity.building, {
@@ -62,6 +69,14 @@ export default class FloorCreate extends Vue {
 
   private createFloor!: (floor: Floor) => Promise<Floor | { error: object }>;
 
+  private createMap!: ({
+    id,
+    file,
+  }: {
+    id: number;
+    file: File;
+  }) => Promise<void>;
+
   private async doAddNew(): Promise<void> {
     try {
       const id = this.buildingId || (this.currentBuilding || {}).id;
@@ -71,10 +86,16 @@ export default class FloorCreate extends Vue {
         return;
       }
 
-      await this.createFloor({
+      const floor = await this.createFloor({
         buildingId: id,
         ...this.newFloor,
       });
+
+      const fileInput = this.$refs.file as HTMLInputElement;
+      if ((fileInput.files?.length || 0) > 0 && 'id' in floor) {
+        const file = fileInput.files![0];
+        await this.createMap({ id: floor.id!, file });
+      }
 
       this.$emit('created', this.newFloor);
       this.newFloor = {};

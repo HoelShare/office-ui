@@ -11,7 +11,7 @@
       :show="showModal"
       minSize="sm"
     >
-      <template #title> Add New Building </template>
+      <template #title>Add New Building </template>
       <TextField v-model="newBuilding.name" label="Name" :error="error.name" />
       <TextField v-model="newBuilding.city" label="City" :error="error.city" />
       <TextField
