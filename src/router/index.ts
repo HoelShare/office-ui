@@ -7,7 +7,7 @@ Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
   {
-    path: '/home',
+    path: '',
     name: 'Home',
     component: Home,
   },
@@ -84,10 +84,9 @@ router.beforeEach((to, from, next) => {
   const { isAuthenticated, isAdmin } = store.getters;
   if (!to.meta.isLogin && !isAuthenticated) {
     next({ name: 'Login' });
-  } else if (to.meta.isLogin && isAuthenticated) {
+  } else if ((to.meta.isLogin && isAuthenticated)
+    || (to.meta.requireAdmin && !isAdmin)) {
     next({ name: 'Home' });
-  } else if (to.meta.requireAdmin && !isAdmin) {
-    next(false);
   } else {
     next();
   }
