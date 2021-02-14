@@ -22,30 +22,16 @@
           />
         </div>
       </div>
-      <div class="position-relative">
-        <div class="w-100">
-          <img
-            v-if="selectedFloor && selectedFloor.floorPath"
-            @click="setSeatLocation"
-            class="img-fluid"
-            :src="`${baseUrl}/${selectedFloor.floorPath}`"
-            @dragover.prevent
-            @dragenter.prevent
-            @drop="onDrop"
-          />
-          <div
-            v-for="seat in seats"
-            :key="seat.id"
-            class="seat"
-            :style="seatStyles(seat)"
-            :class="seatClass(seat)"
-            @click.prevent="newSeat = seat"
-            draggable
-            @dragstart="startDrag($event, seat)"
-          ></div>
-          <SeatModal :seat="newSeat" @close="closeModal" />
-        </div>
-      </div>
+      <SeatMap
+        @click="setSeatLocation"
+        :floor="selectedFloor"
+        :seats="seats"
+        @selectSeat="newSeat = $event"
+        @dropSeat="onDrop"
+        @startDrag="startDrag"
+      >
+      </SeatMap>
+      <SeatModal :seat="newSeat" @close="closeModal" />
     </Panel>
   </div>
 </template>
@@ -56,6 +42,7 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import SelectField from '@/components/SelectField.vue';
 import Panel from '@/components/Panel.vue';
 import SeatModal from '@/components/Admin/Seat/Modal.vue';
+import SeatMap from '@/components/SeatMap.vue';
 import TextField from '@/components/TextField.vue';
 import Button from '@/components/Button.vue';
 import { Building, Floor, NAMES as entity, Seat } from '@/interfaces/Entity';
@@ -66,11 +53,12 @@ import { types } from '@/store/entity-api';
     SelectField,
     Panel,
     SeatModal,
+    SeatMap,
     TextField,
     Button,
   },
   computed: {
-    ...mapGetters(['isAdmin', 'baseUrl']),
+    ...mapGetters(['isAdmin']),
     ...mapState(entity.building, {
       selectedBuilding: 'current',
     }),
@@ -110,25 +98,9 @@ export default class AdminSeatView extends Vue {
 
   private modifySeat!: (seat: Seat) => Promise<void>;
 
-  private baseUrl!: string | undefined;
-
   private seats: Array<Seat> = [];
 
   private newSeat: Seat | null = null;
-
-  private seatClass(seat: Seat) {
-    return {
-      available: true,
-      blocked: seat?.number === 0,
-    };
-  }
-
-  private seatStyles(seat: Seat) {
-    return {
-      left: `${seat.locationX}%`,
-      top: `${seat.locationY}%`,
-    };
-  }
 
   private setSeatLocation(e: MouseEvent) {
     const imageElement = e.target as HTMLImageElement;
@@ -209,27 +181,4 @@ export default class AdminSeatView extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.seat-admin {
-  .position-relative {
-    background: hsla(0, 0%, 100%, 0.1);
-    z-index: 1;
-  }
-
-  .img-fluid {
-    width: 100%;
-  }
-
-  .seat {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 10px;
-    transition: all 0.25s ease-in-out;
-    border: 2px solid #fff;
-
-    &.available {
-      background-color: seagreen;
-    }
-  }
-}
 </style>

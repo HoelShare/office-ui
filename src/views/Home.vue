@@ -1,19 +1,9 @@
 <template>
   <div class="home">
     <Panel>
-      <div class="row mb-2">
-        <div class="col-md-4 col-sm-12">Select Building</div>
-        <div class="col-md-8 col-sm-12">
-          <SelectField
-            entity="building"
-            :value="(selectedBuilding || {}).id"
-            @input="selectBuilding"
-          />
-        </div>
-      </div>
-      <div class="row">
-        <FloorList :building="selectedBuilding"/>
-      </div>
+      <template #header>
+        <h1>Home</h1>
+      </template>
     </Panel>
   </div>
 </template>
