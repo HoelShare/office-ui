@@ -52,8 +52,10 @@ export interface SeatAsset {
 export interface Booking {
   id?: number | undefined;
   userId?: number | undefined;
+  user?: User | undefined;
+  seat?: Seat | undefined;
   seatId: number;
-  fromDay?: Date | undefined;
+  fromDay?: object | undefined;
   untilDay?: Date | undefined;
   createdAt?: Date | undefined;
 }

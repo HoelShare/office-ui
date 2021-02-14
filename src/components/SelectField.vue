@@ -31,7 +31,7 @@
 <script lang="ts">
 import { types } from '@/store/entity-api';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import { mapActions, mapState } from 'vuex';
+import { mapActions } from 'vuex';
 
 @Component({
   methods: mapActions({

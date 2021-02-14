@@ -3,23 +3,28 @@
     <Panel>
       <template #header>
         <div class="row mb-2">
-          <div class="col-md-4 col-sm-12">Select Building</div>
-          <div class="col-md-8 col-sm-12">
+          <div class="col-lg-3 col-md-6 col-sm-12 mb-2">
             <SelectField
               entity="building"
               :value="(selectedBuilding || {}).id"
               @input="selectBuilding"
+              label="Select Building"
             />
           </div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-md-4 col-sm-12">Select Floor</div>
-          <div class="col-md-8 col-sm-12">
+          <div class="col-lg-3 col-md-6 col-sm-12 mb-2">
             <SelectField
               entity="floor"
               :filter="floorFilter"
               :value="(selectedFloor || {}).id"
               @input="selectFloor"
+              label="Select Floor"
+            />
+          </div>
+          <div class="col-lg-6 col-md-12 mb-2">
+            <DatePicker
+              :is-expanded="true"
+              v-model="selectedDate"
+              @input="checkBookings"
             />
           </div>
         </div>
@@ -31,13 +36,20 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import SelectField from '@/components/SelectField.vue';
 import Panel from '@/components/Panel.vue';
 import SeatMap from '@/components/SeatMap.vue';
-import { Building, Floor, NAMES as entity, Seat } from '@/interfaces/Entity';
+import {
+  Booking,
+  Building,
+  Floor,
+  NAMES as entity,
+  Seat,
+} from '@/interfaces/Entity';
 import { types } from '@/store/entity-api';
 import FloorList from '@/components/Admin/Floor/List.vue';
+import DatePicker from 'v-calendar/lib/components/date-picker.umd';
 
 @Component({
   components: {
@@ -45,9 +57,9 @@ import FloorList from '@/components/Admin/Floor/List.vue';
     Panel,
     FloorList,
     SeatMap,
+    DatePicker,
   },
   computed: {
-    ...mapGetters(['isAdmin']),
     ...mapState(entity.building, {
       selectedBuilding: 'current',
     }),
@@ -65,11 +77,12 @@ import FloorList from '@/components/Admin/Floor/List.vue';
     ...mapActions(entity.seat, {
       fetchSeats: types.FETCH_LIST,
     }),
+    ...mapActions(entity.booking, {
+      fetchBookings: types.FETCH_LIST,
+    }),
   },
 })
 export default class HomeView extends Vue {
-  private isAdmin!: boolean;
-
   private selectedBuilding!: Building | null;
 
   private selectBuilding!: (id: number) => Promise<Building>;
@@ -80,7 +93,13 @@ export default class HomeView extends Vue {
 
   private fetchSeats!: (filter?: object) => Promise<Array<Seat>>;
 
+  private fetchBookings!: (filter?: object) => Promise<Array<Booking>>;
+
   private seats: Array<Seat> = [];
+
+  private selectedDate: Date | null = new Date();
+
+  private bookingsOnDay: Array<Booking> = [];
 
   @Watch('selectedFloor', { immediate: true })
   private async updateSeats() {
@@ -89,6 +108,30 @@ export default class HomeView extends Vue {
     }
 
     this.seats = await this.fetchSeats(this.seatFilter);
+  }
+
+  private async checkBookings() {
+    this.bookingsOnDay = await this.fetchBookings(this.bookingFilter);
+  }
+
+  private get bookingFilter() {
+    if (!this.selectedDate) {
+      return undefined;
+    }
+
+    const startDay = new Date(this.selectedDate);
+    const endDay = new Date(this.selectedDate);
+
+    startDay.setUTCHours(0, 0);
+    endDay.setUTCHours(23, 59, 59, 99);
+
+    return {
+      where: {
+        untilDay: { type: 'lte', value: endDay.toISOString() },
+        fromDay: { type: 'gte', value: startDay.toISOString() },
+        'seat.floorId': this.selectedFloor?.id,
+      },
+    };
   }
 
   private get floorFilter() {
