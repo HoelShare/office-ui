@@ -111,8 +111,20 @@ export default class AdminSeatView extends Vue {
     this.newSeat = {
       floorId: this.selectedFloor!.id!,
       number: 0,
-      locationX: ((e.offsetX - 10) * 100) / imageElement.width,
-      locationY: ((e.offsetY - 10) * 100) / imageElement.height,
+      ...this.extractPositions(imageElement, e),
+    };
+  }
+
+  private extractPositions(imageElement: HTMLImageElement, e: MouseEvent) {
+    const { offsetX, offsetY } = e;
+    const locationX =
+      (offsetX * imageElement.naturalWidth) / imageElement.clientWidth;
+    const locationY =
+      (offsetY * imageElement.naturalHeight) / imageElement.clientHeight;
+
+    return {
+      locationX,
+      locationY,
     };
   }
 
@@ -168,12 +180,9 @@ export default class AdminSeatView extends Vue {
       return;
     }
 
-    const origOffsetX = Number(event.dataTransfer.getData('offsetX') ?? 0);
-    const origOffsetY = Number(event.dataTransfer.getData('offsetY') ?? 0);
-
-    seat.locationX = ((event.offsetX - origOffsetX) * 100) / imageElement.width;
-    seat.locationY =
-      ((event.offsetY - origOffsetY) * 100) / imageElement.height;
+    const { locationX, locationY } = this.extractPositions(imageElement, event);
+    seat.locationX = locationX;
+    seat.locationY = locationY;
 
     this.modifySeat(seat).then(this.updateSeats);
   }
