@@ -88,7 +88,9 @@ export default class SelectField extends Vue {
   private async fetch() {
     this.list = await this.fetchList(this.filter);
 
-    const renew = this.list.some((value) => (value as any)[this.valueField] === this.value);
+    const renew = this.list.some(
+      (value) => (value as any)[this.valueField] !== this.value,
+    );
 
     if (!renew && (this.value !== undefined || this.list.length === 0)) {
       return;
