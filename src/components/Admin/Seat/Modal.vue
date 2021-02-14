@@ -1,11 +1,16 @@
 <template>
-  <Modal :show="seat !== null" @save="addSeat" @close="$emit('close')">
+  <Modal
+    :show="seat !== null"
+    @save="addSeat"
+    @close="$emit('close')"
+    @show="onShow"
+  >
     <template #title>
       <template v-if="seat && !seat.id">Add New Seat</template>
       <template v-else>Modify Seat</template>
     </template>
     <template v-if="seat">
-      <TextField v-model="seat.number" />
+      <TextField v-model="seat.number" ref="number" />
       <template v-if="seat.id">
         <div v-for="assetGroup in assetGroups" :key="assetGroup">
           <h3 class="list-title pt-3">{{ assetGroup }}</h3>
@@ -93,15 +98,31 @@ export default class SeatModal extends Vue {
 
   private deleteSeatAsset!: (id: number) => Promise<void>;
 
+  private onShow() {
+    this.$nextTick(() => {
+      const vueElement = this.$refs.number as Vue;
+      const element = vueElement.$el;
+      const inputElement = element.getElementsByTagName('input')[0] as HTMLInputElement;
+
+      if (!inputElement) {
+        return;
+      }
+
+      inputElement.focus();
+    });
+  }
+
   private checkSelected(asset: Asset): boolean {
     return this.seatAssets.some(
-      (seatAsset: SeatAsset) => seatAsset.assetId === asset.id || seatAsset.asset?.id === asset.id,
+      (seatAsset: SeatAsset) =>
+        seatAsset.assetId === asset.id || seatAsset.asset?.id === asset.id,
     );
   }
 
   private toggleAsset(asset: Asset) {
     let seatAsset = this.seatAssets.find(
-      (toCheck: SeatAsset) => toCheck.assetId === asset.id || toCheck.asset?.id === asset.id,
+      (toCheck: SeatAsset) =>
+        toCheck.assetId === asset.id || toCheck.asset?.id === asset.id,
     );
 
     if (seatAsset) {

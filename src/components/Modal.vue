@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import Button from '@/components/Button.vue';
 
 @Component({
@@ -51,6 +51,8 @@ export default class Modal extends Vue {
   })
   private minSize!: null | string;
 
+  private modalOpenClass = 'modal-open';
+
   private get componentWrapper(): string {
     if (this.isForm) {
       return 'form';
@@ -63,6 +65,45 @@ export default class Modal extends Vue {
     return {
       [`modal-fullscreen-${this.minSize}-down`]: this.minSize !== null,
     };
+  }
+
+  @Watch('show', { immediate: true })
+  private toggleClassOnBody() {
+    if (this.show) {
+      this.addClassToBody();
+      document.body.addEventListener('keydown', this.keyClose);
+
+      this.$emit('show');
+      return;
+    }
+
+    this.removeClassFromBody();
+    document.body.removeEventListener('keydown', this.keyClose);
+  }
+
+  private keyClose(event: KeyboardEvent) {
+    if (event.code !== 'Escape') {
+      return;
+    }
+
+    this.$emit('close');
+  }
+
+  private beforeDestroy() {
+    this.removeClassFromBody();
+    document.body.removeEventListener('keydown', this.keyClose);
+  }
+
+  private addClassToBody() {
+    const el = document.body;
+
+    el.classList.add(this.modalOpenClass);
+  }
+
+  private removeClassFromBody() {
+    const el = document.body;
+
+    el.classList.remove(this.modalOpenClass);
   }
 }
 </script>
