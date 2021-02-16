@@ -49,7 +49,9 @@ import {
 } from '@/interfaces/Entity';
 import { types } from '@/store/entity-api';
 import FloorList from '@/components/Admin/Floor/List.vue';
-import DatePicker from 'v-calendar/lib/components/date-picker.umd';
+
+/* eslint-disable-next-line @typescript-eslint/no-var-requires */
+const DatePicker = require('v-calendar/lib/components/date-picker.umd');
 
 @Component({
   components: {
