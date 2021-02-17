@@ -80,6 +80,13 @@ const router = new VueRouter({
   routes,
 });
 
+store.subscribeAction((action) => {
+  if (action.type !== 'logout') {
+    return;
+  }
+  router.replace({ name: 'Login' });
+});
+
 router.beforeEach((to, from, next) => {
   const { isAuthenticated, isAdmin } = store.getters;
   if (!to.meta.isLogin && !isAuthenticated) {

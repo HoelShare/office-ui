@@ -3,7 +3,7 @@ import Vuex, { Commit, Dispatch } from 'vuex';
 import authModule from '@/store/auth';
 import entityApi from '@/store/entity-api';
 import floorApi, { NAME as floorMapName } from '@/store/floor-api';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 import { RootState } from '@/interfaces/States';
 import * as entity from '@/interfaces/Entity';
 import * as types from './types';
@@ -44,6 +44,15 @@ const store = new Vuex.Store<RootState>({
   actions: {
     initAxios({ commit, dispatch }:
       { commit: Commit; dispatch: Dispatch }, axiosInstance: AxiosInstance) {
+      axiosInstance.interceptors.response.use(
+        (response) => response, (error: AxiosError) => {
+          if (error.response?.status === 401) {
+            dispatch('logout');
+            return Promise.resolve();
+          }
+          return Promise.reject(error);
+        },
+      );
       commit(types.AUTH_AXIOS, axiosInstance);
       const authToken = localStorage.getItem(types.KEY_AUTH_TOKEN);
       commit(types.AUTHENTICATE, authToken);
