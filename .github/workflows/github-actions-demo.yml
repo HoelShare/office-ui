@@ -1,0 +1,16 @@
+name: GitHub Actions Demo
+
+on: [push]
+
+jobs:
+  Explore-Github-Actions:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Lint files with eslint
+        run: npm run lint:scripts
+      - name: Lint files with stylelint
+        run: npm run lint:styles
+      - name: Check code formatting with prettier
+        run: npm run prettier:check
